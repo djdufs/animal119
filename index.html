@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>반려동물 동네지도 (카카오)</title>
+
+  <!-- ✅ 카카오 지도 SDK 로딩 (자동 로드 off) -->
+  <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=c1f688a7391569a65a7c185f163783d3&autoload=false"></script>
+
+  <style>
+    #map {
+      width: 100%;
+      height: 90vh;
+    }
+    .marker-label {
+      background: white;
+      padding: 2px 6px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    #login-form {
+      margin: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <h2>반려동물 동네지도 (카카오)</h2>
+  <div id="map"></div>
+
+  <div id="login-form">
+    <h3>관리자 로그인</h3>
+    <input type="text" id="username" placeholder="ID">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">로그인</button>
+    <div id="login-message"></div>
+  </div>
+
+  <script>
+    kakao.maps.load(() => {
+      const mapContainer = document.getElementById('map');
+      const mapOption = {
+        center: new kakao.maps.LatLng(37.59556, 126.946375),
+        level: 5
+      };
+      const map = new kakao.maps.Map(mapContainer, mapOption);
+
+      fetch('http://localhost:3000/places')
+        .then(res => res.json())
+        .then(places => {
+          places.forEach(place => {
+            const position = new kakao.maps.LatLng(place.lat, place.lng);
+            const marker = new kakao.maps.Marker({
+              map: map,
+              position: position
+            });
+
+            const iwContent = `<div class="marker-label"><strong>${place.name}</strong><br>${place.desc}</div>`;
+            const infowindow = new kakao.maps.InfoWindow({
+              content: iwContent
+            });
+
+            kakao.maps.event.addListener(marker, 'click', () => {
+              infowindow.open(map, marker);
+            });
+          });
+        });
+    });
+
+    function login() {
+      const id = document.getElementById('username').value;
+      const pw = document.getElementById('password').value;
+      const message = document.getElementById('login-message');
+
+      if (id === 'admin' && pw === '1234') {
+        message.style.color = 'green';
+        message.innerText = '로그인 성공! 장소 등록 페이지로 이동합니다.';
+        setTimeout(() => {
+          window.location.href = 'admin.html';
+        }, 1000);
+      } else {
+        message.style.color = 'red';
+        message.innerText = 'ID 또는 비밀번호가 틀렸습니다';
+      }
+    }
+  </script>
+</body>
+</html>

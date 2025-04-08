@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>장소 등록 (클릭 마커)</title>
+  <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=c1f688a7391569a65a7c185f163783d3&autoload=false"></script>
+  <style>
+    #map {
+      width: 100%;
+      height: 90vh;
+    }
+    .info-window {
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    input[type="text"] {
+      width: 150px;
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h2>클릭해서 장소 등록하기 (관리자 전용)</h2>
+  <div id="map"></div>
+  <div id="status" style="margin-top: 10px;"></div>
+
+  <script>
+    kakao.maps.load(() => {
+      const map = new kakao.maps.Map(document.getElementById('map'), {
+        center: new kakao.maps.LatLng(37.5665, 126.978),
+        level: 5
+      });
+
+      let currentMarker = null;
+
+      kakao.maps.event.addListener(map, 'click', function(mouseEvent) {
+        const latlng = mouseEvent.latLng;
+
+        if (currentMarker) currentMarker.setMap(null); // 이전 마커 제거
+
+        currentMarker = new kakao.maps.Marker({
+          position: latlng,
+          map: map
+        });
+
+        const content = document.createElement('div');
+        content.className = 'info-window';
+        content.innerHTML = `
+          <div><input type="text" id="name" placeholder="장소 이름"></div>
+          <div><input type="text" id="desc" placeholder="설명"></div>
+          <div><button id="saveBtn">등록</button></div>
+        `;
+
+        const infowindow = new kakao.maps.InfoWindow({
+          content: content,
+          removable: true
+        });
+
+        infowindow.open(map, currentMarker);
+
+        content.querySelector('#saveBtn').onclick = function() {
+          const name = content.querySelector('#name').value;
+          const desc = content.querySelector('#desc').value;
+
+          fetch('http://localhost:3000/places', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name,
+              desc,
+              lat: latlng.getLat(),
+              lng: latlng.getLng()
+            })
+          })
+          .then(res => res.json())
+          .then(data => {
+            document.getElementById('status').innerText = '✅ 장소가 등록되었습니다!';
+            infowindow.close();
+          })
+          .catch(err => {
+            document.getElementById('status').innerText = '❌ 오류 발생: ' + err.message;
+          });
+        };
+      });
+    });
+  </script>
+</body>
+</html>
