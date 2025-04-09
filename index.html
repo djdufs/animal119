@@ -46,7 +46,7 @@
       };
       const map = new kakao.maps.Map(mapContainer, mapOption);
 
-      fetch("https://animal119-api.vercel.app/places")
+      fetch("https://animal119-api.vercel.app/api/places")
         .then(res => res.json())
         .then(places => {
           places.forEach(place => {
