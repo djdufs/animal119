@@ -62,7 +62,7 @@
           const name = content.querySelector('#name').value;
           const desc = content.querySelector('#desc').value;
 
-          fetch('https://animal119.netlify.app/api/places', {
+          fetch("https://animal119-api.vercel.app/places", {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
